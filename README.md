@@ -34,7 +34,7 @@ pnpm exec playwright install chromium
 pnpm run setup
 ```
 
-表示されたChromiumでXへログインし、ブックマーク画面が開いたことを確認してから、ターミナルでEnterを押します。Cookieを含むブラウザプロフィールは `.browser-profile/` に保存され、Gitには含まれません。
+表示されたChromiumでXへログインしてください。ログイン完了を検出すると、ブックマーク画面を確認して自動的にブラウザを閉じます。Cookieを含むブラウザプロフィールは `.browser-profile/` に保存され、Gitには含まれません。
 
 ## 1回実行
 
@@ -76,6 +76,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Install-ScheduledTask.ps1 -Mi
 | `XBA_BOOKMARK_SCROLLS` | `8` | ブックマーク一覧のスクロール回数 |
 | `XBA_THREAD_SCROLLS` | `10` | 返信画面のスクロール回数 |
 | `XBA_SCROLL_DELAY_MS` | `1200` | スクロール後の待機時間 |
+| `XBA_SETUP_TIMEOUT_MS` | `600000` | 初回ログインを待つ時間（ミリ秒） |
 
 例:
 

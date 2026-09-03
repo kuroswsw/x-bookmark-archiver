@@ -160,15 +160,27 @@ export async function verifyProfile(config) {
   const page = context.pages()[0] ?? await context.newPage();
   try {
     await page.goto(config.bookmarksUrl, { waitUntil: "domcontentloaded", timeout: 45_000 });
-    process.stdout.write("\nXへログインしてブックマーク画面を表示し、このターミナルで Enter を押してください。\n");
-    await new Promise((resolve) => process.stdin.once("data", resolve));
-    await assertLoggedIn(page);
-    const statusLinks = page.locator('article[data-testid="tweet"] a[href*="/status/"]');
-    if ((await statusLinks.count()) === 0) {
-      throw new Error("ブックマーク投稿が画面に見つかりません。ログイン状態とブックマーク画面を確認してください。");
+    process.stdout.write("\nXへログインしてください。ログイン完了は自動的に検出されます。\n");
+    const deadline = Date.now() + config.setupTimeoutMs;
+    while (Date.now() < deadline) {
+      const isLoginPage = /\/login|\/i\/flow\/login/i.test(page.url());
+      const authenticatedMarker = page.locator('[data-testid="SideNav_AccountSwitcher_Button"], a[href="/home"]');
+      if (!isLoginPage && (await authenticatedMarker.count()) > 0) break;
+      await page.waitForTimeout(1_000);
     }
-    const parsed = parseStatusUrl(await statusLinks.first().getAttribute("href"));
-    process.stdout.write(`ログイン状態を保存しました。確認できた投稿ID: ${parsed?.id ?? "unknown"}\n`);
+    if (/\/login|\/i\/flow\/login/i.test(page.url())) {
+      throw new Error("制限時間内にXのログインを確認できませんでした。もう一度 `pnpm run setup` を実行してください。");
+    }
+    if (!/\/i\/bookmarks/i.test(page.url())) {
+      await page.goto(config.bookmarksUrl, { waitUntil: "domcontentloaded", timeout: 45_000 });
+    }
+    await assertLoggedIn(page);
+    await page.locator("main").first().waitFor({ state: "visible", timeout: 30_000 });
+    const statusLinks = page.locator('article[data-testid="tweet"] a[href*="/status/"]');
+    const parsed = (await statusLinks.count()) > 0
+      ? parseStatusUrl(await statusLinks.first().getAttribute("href"))
+      : null;
+    process.stdout.write(`ログイン状態を保存しました。${parsed ? `確認できた投稿ID: ${parsed.id}` : "ブックマークは現在0件です。"}\n`);
   } finally {
     await context.close();
   }

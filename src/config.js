@@ -29,7 +29,7 @@ export function loadConfig(overrides = {}) {
     bookmarkScrolls: integer("XBA_BOOKMARK_SCROLLS", 8),
     threadScrolls: integer("XBA_THREAD_SCROLLS", 10),
     scrollDelayMs: integer("XBA_SCROLL_DELAY_MS", 1200, 100),
+    setupTimeoutMs: integer("XBA_SETUP_TIMEOUT_MS", 600_000, 30_000),
     bookmarksUrl: "https://x.com/i/bookmarks"
   };
 }
-
