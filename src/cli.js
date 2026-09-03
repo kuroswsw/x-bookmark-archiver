@@ -39,12 +39,46 @@ async function doctor(config) {
     ["Node.js", process.version],
     ["作業フォルダ", config.rootDir],
     ["保存先", config.archiveDir],
+    ["常駐時の確認間隔", `${config.pollIntervalSeconds}秒`],
     ["ブラウザプロフィール", config.profileDir],
     ["Xログイン設定済み", await fs.access(path.join(config.profileDir, ".authenticated")).then(() => "はい").catch(() => "いいえ")]
   ];
   for (const [name, value] of checks) process.stdout.write(`${name}: ${value}\n`);
   const envFile = path.join(config.rootDir, ".env");
   process.stdout.write(`.env: ${await fs.access(envFile).then(() => "あり").catch(() => "なし（既定値を使用）")}\n`);
+}
+
+async function runDaemon(config) {
+  let stopping = false;
+  let wake = null;
+  const stop = () => {
+    stopping = true;
+    wake?.();
+  };
+  process.once("SIGINT", stop);
+  process.once("SIGTERM", stop);
+  process.stdout.write(`常駐監視を開始します（${config.pollIntervalSeconds}秒間隔）。\n`);
+
+  while (!stopping) {
+    const startedAt = Date.now();
+    try {
+      await runArchive(config);
+    } catch (error) {
+      process.stderr.write(`[${new Date().toISOString()}] 巡回失敗: ${error.message}\n`);
+    }
+    if (stopping) break;
+    const elapsed = Date.now() - startedAt;
+    const waitMs = Math.max(1_000, config.pollIntervalSeconds * 1_000 - elapsed);
+    await new Promise((resolve) => {
+      const timer = setTimeout(resolve, waitMs);
+      wake = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+    });
+    wake = null;
+  }
+  process.stdout.write("常駐監視を終了しました。\n");
 }
 
 async function main() {
@@ -57,8 +91,9 @@ async function main() {
   const config = loadConfig();
   if (command === "setup") return verifyProfile(config);
   if (command === "run") return runArchive(config);
+  if (command === "daemon") return runDaemon(config);
   if (command === "doctor") return doctor(config);
-  throw new Error(`Unknown command: ${command}. Use setup, run, or doctor.`);
+  throw new Error(`Unknown command: ${command}. Use setup, run, daemon, or doctor.`);
 }
 
 main().catch((error) => {

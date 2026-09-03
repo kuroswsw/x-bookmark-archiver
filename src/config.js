@@ -30,6 +30,7 @@ export function loadConfig(overrides = {}) {
     threadScrolls: integer("XBA_THREAD_SCROLLS", 10),
     scrollDelayMs: integer("XBA_SCROLL_DELAY_MS", 1200, 100),
     setupTimeoutMs: integer("XBA_SETUP_TIMEOUT_MS", 600_000, 30_000),
+    pollIntervalSeconds: integer("XBA_POLL_INTERVAL_SECONDS", 60, 30),
     bookmarksUrl: "https://x.com/i/bookmarks"
   };
 }

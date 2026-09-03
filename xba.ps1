@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("setup", "run", "doctor")]
+    [ValidateSet("setup", "run", "daemon", "doctor")]
     [string]$Command = "run"
 )
 
@@ -20,7 +20,7 @@ $CliPath = Join-Path $PSScriptRoot "src\cli.js"
 $PlaywrightCli = Join-Path $PSScriptRoot "node_modules\playwright\cli.js"
 $env:PLAYWRIGHT_BROWSERS_PATH = Join-Path $PSScriptRoot ".playwright-browsers"
 
-if ($Command -in @("setup", "run")) {
+if ($Command -in @("setup", "run", "daemon")) {
     if (-not (Test-Path -LiteralPath $PlaywrightCli -PathType Leaf)) {
         throw "Dependencies are missing. Run 'pnpm install' after installing Node.js 20 or newer."
     }

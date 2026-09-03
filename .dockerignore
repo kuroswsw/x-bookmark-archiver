@@ -1,0 +1,13 @@
+.git
+.github
+.browser-profile
+.playwright-browsers
+archive
+vps-data
+node_modules
+outputs
+work
+.env
+.env.vps
+*.log
+

@@ -1,0 +1,31 @@
+services:
+  archiver:
+    build: .
+    init: true
+    restart: unless-stopped
+    ipc: host
+    shm_size: 1gb
+    env_file:
+      - .env.vps
+    volumes:
+      - ./vps-data/profile:/data/profile
+      - ./vps-data/archive:/data/archive
+
+  setup:
+    build: .
+    profiles: ["setup"]
+    init: true
+    ipc: host
+    shm_size: 1gb
+    env_file:
+      - .env.vps
+    environment:
+      XBA_HEADLESS: "false"
+      DISPLAY: ":99"
+    ports:
+      - "127.0.0.1:6080:6080"
+    volumes:
+      - ./vps-data/profile:/data/profile
+      - ./vps-data/archive:/data/archive
+    command: ["/app/docker/vps-setup.sh"]
+
