@@ -81,7 +81,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Install-ScheduledTask.ps1 -Mi
 
 ```powershell
 $env:XBA_ARCHIVE_DIR = "D:\XArchive"
-pnpm archive
+pnpm run archive
 ```
 
 ## 診断とテスト
