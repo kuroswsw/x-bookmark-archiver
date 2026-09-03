@@ -1,0 +1,21 @@
+{
+  "name": "x-bookmark-archiver",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Archive your own X bookmarks, author reply threads, and media from the browser UI.",
+  "type": "module",
+  "scripts": {
+    "setup": "node src/cli.js setup",
+    "archive": "node src/cli.js run",
+    "doctor": "node src/cli.js doctor",
+    "test": "node --test --test-isolation=none"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.19.0",
+  "dependencies": {
+    "playwright": "^1.62.1"
+  },
+  "license": "MIT"
+}
