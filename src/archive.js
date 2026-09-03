@@ -74,8 +74,10 @@ export function renderMarkdown(record) {
 
   if (record.xArticles?.length) {
     lines.push("", "## X記事", "");
-    for (const article of record.xArticles) {
+    for (const [index, article] of record.xArticles.entries()) {
       lines.push(`### ${article.title || article.url}`, "", `- URL: ${article.url}`, "", article.text || "本文を取得できませんでした。", "");
+      const articleMedia = record.localArticleMedia?.[index] || [];
+      lines.push(...articleMedia.map((media) => `![article media](./${media.replaceAll("\\", "/")})`), "");
     }
   }
   return `${lines.join("\n").trim()}\n`;
@@ -100,18 +102,28 @@ export async function writeState(archiveDir, state) {
 }
 
 async function downloadMedia(request, url, destinationBase) {
+  let sourceUrl = url;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "pbs.twimg.com" && parsed.pathname.startsWith("/media/")) {
+      parsed.searchParams.set("name", "orig");
+      sourceUrl = parsed.toString();
+    }
+  } catch {
+    // The request below will return a useful error for an invalid URL.
+  }
   let response;
   try {
-    response = await request.get(url, { timeout: 30_000 });
+    response = await request.get(sourceUrl, { timeout: 30_000 });
   } catch (error) {
-    return { error: `download failed: ${error.message}`, sourceUrl: url };
+    return { error: `download failed: ${error.message}`, sourceUrl };
   }
-  if (!response.ok()) return { error: `HTTP ${response.status()}`, sourceUrl: url };
+  if (!response.ok()) return { error: `HTTP ${response.status()}`, sourceUrl };
   const type = (response.headers()["content-type"] || "").split(";", 1)[0];
   const extension = CONTENT_EXTENSIONS.get(type) || path.extname(new URL(url).pathname) || ".bin";
   const destination = `${destinationBase}${extension}`;
   if (!(await exists(destination))) await fs.writeFile(destination, await response.body());
-  return { path: destination, sourceUrl: url };
+  return { path: destination, sourceUrl };
 }
 
 export async function saveArchive(record, archiveDir, request) {
@@ -131,8 +143,17 @@ export async function saveArchive(record, archiveDir, request) {
     }
   }
 
+  record.localArticleMedia = {};
+  for (const [articleIndex, article] of (record.xArticles || []).entries()) {
+    record.localArticleMedia[articleIndex] = [];
+    for (const [mediaIndex, url] of (article.mediaUrls || []).entries()) {
+      const result = await downloadMedia(request, url, path.join(mediaDir, `article-${articleIndex + 1}-${mediaIndex + 1}`));
+      if (result.path) record.localArticleMedia[articleIndex].push(path.relative(itemDir, result.path));
+      else record.mediaErrors.push({ articleUrl: article.url, ...result });
+    }
+  }
+
   await fs.writeFile(path.join(itemDir, "post.json"), `${JSON.stringify(record, null, 2)}\n`, "utf8");
   await fs.writeFile(path.join(itemDir, "README.md"), renderMarkdown(record), "utf8");
   return itemDir;
 }
-

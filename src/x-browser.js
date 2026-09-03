@@ -84,7 +84,10 @@ async function extractXArticle(context, url, delayMs) {
     const body = (await preferred.count()) ? preferred.first() : page.locator("main").first();
     const title = await body.locator("h1").first().textContent().catch(() => null);
     const text = await body.innerText({ timeout: 10_000 }).catch(() => "");
-    return { url, title: title?.trim() || null, text: text.trim() };
+    const mediaUrls = await body.locator("img").evaluateAll((images) => images
+      .map((image) => image.currentSrc || image.src)
+      .filter((source) => /pbs\.twimg\.com\/media\//i.test(source)));
+    return { url, title: title?.trim() || null, text: text.trim(), mediaUrls: [...new Set(mediaUrls)] };
   } finally {
     await page.close();
   }
