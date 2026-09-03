@@ -5,12 +5,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ProjectDir = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$NodePath = (Get-Command node -ErrorAction Stop).Source
-$CliPath = Join-Path $ProjectDir "src\cli.js"
+$PowerShellPath = (Get-Command powershell.exe -ErrorAction Stop).Source
+$LauncherPath = Join-Path $ProjectDir "xba.ps1"
 
 $Action = New-ScheduledTaskAction `
-    -Execute $NodePath `
-    -Argument ('"{0}" run' -f $CliPath) `
+    -Execute $PowerShellPath `
+    -Argument ('-NoProfile -ExecutionPolicy Bypass -File "{0}" run' -f $LauncherPath) `
     -WorkingDirectory $ProjectDir
 
 $Trigger = New-ScheduledTaskTrigger `
@@ -33,4 +33,3 @@ Register-ScheduledTask `
     -Force
 
 Write-Host "Scheduled task '$TaskName' was registered to run every $Minutes minutes."
-

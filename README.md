@@ -30,8 +30,10 @@ pnpm exec playwright install chromium
 
 ## 初回ログイン
 
+Windowsでは、Node.jsがPATHにない場合もCodex付属版を検出するランチャーを利用できます。
+
 ```powershell
-pnpm run setup
+powershell -ExecutionPolicy Bypass -File .\xba.ps1 setup
 ```
 
 表示されたChromiumでXへログインしてください。ログイン完了を検出すると、ブックマーク画面を確認して自動的にブラウザを閉じます。Cookieを含むブラウザプロフィールは `.browser-profile/` に保存され、Gitには含まれません。
@@ -39,7 +41,7 @@ pnpm run setup
 ## 1回実行
 
 ```powershell
-pnpm run archive
+powershell -ExecutionPolicy Bypass -File .\xba.ps1 run
 ```
 
 既定の保存先は `archive/` です。
@@ -88,9 +90,11 @@ pnpm run archive
 ## 診断とテスト
 
 ```powershell
-pnpm run doctor
+powershell -ExecutionPolicy Bypass -File .\xba.ps1 doctor
 pnpm run test
 ```
+
+macOS/Linux、またはNode.jsがPATHにある環境では、従来どおり `pnpm run setup`、`pnpm run archive`、`pnpm run doctor` も使用できます。
 
 ## ライセンス
 

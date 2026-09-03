@@ -40,7 +40,7 @@ async function doctor(config) {
     ["作業フォルダ", config.rootDir],
     ["保存先", config.archiveDir],
     ["ブラウザプロフィール", config.profileDir],
-    ["プロフィール作成済み", await fs.access(config.profileDir).then(() => "はい").catch(() => "いいえ")]
+    ["Xログイン設定済み", await fs.access(path.join(config.profileDir, ".authenticated")).then(() => "はい").catch(() => "いいえ")]
   ];
   for (const [name, value] of checks) process.stdout.write(`${name}: ${value}\n`);
   const envFile = path.join(config.rootDir, ".env");

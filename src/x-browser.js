@@ -1,3 +1,5 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import { chromium } from "playwright";
 import { buildAuthorThread, normalizePost, parseStatusUrl } from "./model.js";
 
@@ -180,6 +182,7 @@ export async function verifyProfile(config) {
     const parsed = (await statusLinks.count()) > 0
       ? parseStatusUrl(await statusLinks.first().getAttribute("href"))
       : null;
+    await fs.writeFile(path.join(config.profileDir, ".authenticated"), `${new Date().toISOString()}\n`, "utf8");
     process.stdout.write(`ログイン状態を保存しました。${parsed ? `確認できた投稿ID: ${parsed.id}` : "ブックマークは現在0件です。"}\n`);
   } finally {
     await context.close();
