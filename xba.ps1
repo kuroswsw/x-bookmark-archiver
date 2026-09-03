@@ -17,6 +17,22 @@ if ($NodeCommand) {
 }
 
 $CliPath = Join-Path $PSScriptRoot "src\cli.js"
+$PlaywrightCli = Join-Path $PSScriptRoot "node_modules\playwright\cli.js"
+$env:PLAYWRIGHT_BROWSERS_PATH = Join-Path $PSScriptRoot ".playwright-browsers"
+
+if ($Command -in @("setup", "run")) {
+    if (-not (Test-Path -LiteralPath $PlaywrightCli -PathType Leaf)) {
+        throw "Dependencies are missing. Run 'pnpm install' after installing Node.js 20 or newer."
+    }
+    $InstalledChromium = Get-ChildItem -LiteralPath $env:PLAYWRIGHT_BROWSERS_PATH -Directory -Filter "chromium-*" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $InstalledChromium) {
+        Write-Host "Installing Chromium into $env:PLAYWRIGHT_BROWSERS_PATH ..."
+        & $NodePath $PlaywrightCli install chromium
+        if ($LASTEXITCODE -ne 0) {
+            throw "Chromium installation failed with exit code $LASTEXITCODE."
+        }
+    }
+}
+
 & $NodePath $CliPath $Command
 exit $LASTEXITCODE
-

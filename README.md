@@ -36,7 +36,7 @@ Windowsでは、Node.jsがPATHにない場合もCodex付属版を検出するラ
 powershell -ExecutionPolicy Bypass -File .\xba.ps1 setup
 ```
 
-表示されたChromiumでXへログインしてください。ログイン完了を検出すると、ブックマーク画面を確認して自動的にブラウザを閉じます。Cookieを含むブラウザプロフィールは `.browser-profile/` に保存され、Gitには含まれません。
+初回はChromiumが `.playwright-browsers/` に自動ダウンロードされます。表示されたChromiumでXへログインしてください。ログイン完了を検出すると、ブックマーク画面を確認して自動的にブラウザを閉じます。Cookieを含むブラウザプロフィールは `.browser-profile/` に保存されます。両フォルダともGitには含まれません。
 
 ## 1回実行
 
